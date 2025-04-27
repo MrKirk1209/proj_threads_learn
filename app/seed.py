@@ -1,6 +1,6 @@
 import asyncio
-from database import async_session_maker  # Импорт твоего session maker
-from models.models import User, Role, Post, Thread  # Импорт твоих моделей
+from app.database import async_session_maker  # Импорт твоего session maker
+from app.models.models import User, Role, Post, Thread  # Импорт твоих моделей
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 

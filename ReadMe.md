@@ -1,7 +1,16 @@
-#Находимся в ../proj_threads_learn
+# Находимся в ../proj_threads_learn
 
-##Создание миграции
+## Создание миграции
 `alembic revision --autogenerate -m "Name migration"`
 
-##Установка миграции
+## Установка миграции
 `alembic upgrade head`
+
+## Посев(добавления начальных данных из seed.py)
+
+`python -m app.seed`
+
+## Подключение venv
+
+ `.venv\scripts\activate`
+
