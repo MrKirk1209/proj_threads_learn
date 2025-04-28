@@ -29,6 +29,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
 
 from app.config import get_db_url
+import logging
+
+logging.basicConfig(filename="py_log.log", filemode="w", level=logging.INFO)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 DATABASE_URL = get_db_url()
 
