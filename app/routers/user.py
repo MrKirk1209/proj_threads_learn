@@ -46,7 +46,7 @@ async def create_user(user_data: pyd.CreateUser, db: AsyncSession = Depends(get_
 
     stmt = (
         select(m.Role)
-        .where(m.Role.role_name == "admin")
+        .where(m.Role.role_name == "user")
     )
     result = await db.execute(stmt)
     role = result.scalars().first()
