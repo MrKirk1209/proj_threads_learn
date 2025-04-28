@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import Optional
 
 
 # тут модели которые используются при создании/редактировании сущностей
@@ -22,9 +22,12 @@ from typing import List
 #         orm_mode = True
 
 
-# class CreateUser(BaseModel):
-#     username: str = Field(..., max_length=255, example='Колбаса')
-#     password: str = Field(..., max_length=255, example='Колбаса')
+class CreateUser(BaseModel):
+    email: str = Field(..., max_length=255, example="kolbasa@gmail.com")
+    user_name: str = Field(..., max_length=255,example="kolbasa")
+    user_password: str = Field(..., min_length=8,exclude=True, max_length=255)
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
-#     class Config:
-#         orm_mode = True
+

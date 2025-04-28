@@ -14,3 +14,6 @@
 
  `.venv\scripts\activate`
 
+## Установка зависимостей(библиотек)
+
+`pip install -r requirements.txt`

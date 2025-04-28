@@ -2,8 +2,6 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-# файл с базовыми моделями
-
 
 class RoleBase(BaseModel):
     id: int = Field(None, gt=0, example=1)
