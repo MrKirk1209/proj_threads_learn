@@ -1,6 +1,6 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
-
 
 
 class RoleBase(BaseModel):
@@ -32,6 +32,10 @@ class PostBase(BaseModel):
     content: str = Field(None, examples=["То что можно скушать"])
     image_url: str = Field(None, examples=["https://example.com/image.jpg"])
     author_id: int = Field(..., gt=0)
+
+    created_at: datetime = Field(None)
+    updated_at: datetime = Field(None)
+    threads_count: int = Field(None)
     # author: User
 
     class Config:
@@ -45,6 +49,7 @@ class ThreadBase(BaseModel):
     image_url: str = Field(None, examples=["https://example.com/image.jpg"])
     creator_id: int = Field(..., gt=0, example=1)
     post_id: int = Field(..., gt=0, example=1)
+    parent_id: Optional[int] = Field(None, example=1)
 
     class Config:
         orm_mode = True
