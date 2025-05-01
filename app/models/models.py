@@ -10,7 +10,10 @@ class Post(Base):
     title: Mapped[str_uniq]
     content: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str]
+    threads_count: Mapped[int] = mapped_column(server_default=text("0"))
+
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
     author: Mapped["User"] = relationship(
         "User",
         back_populates="posts",

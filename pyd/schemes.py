@@ -1,3 +1,4 @@
+from datetime import datetime
 from .base_models import *
 from typing import List, Optional
 from pydantic import BaseModel, Field
@@ -29,12 +30,12 @@ class RoleSchema(RoleBase):
     role_name: str = Field(None, max_length=255)
 
 
-class PostSchema(BaseModel):
-    id: int = Field(...)
-    title: str = Field(..., max_length=255)
-    content: str = Field(None)
-    image_url: str = Field(None)
-    author_id: int = Field(..., gt=0)
+class PostSchema(PostBase): ...
+
+
+class PostSchemaWithThreads(PostBase):
+    threads: Optional[List["ThreadSchema"]] = Field(None, alias="threads")
+    user: Optional[UserThreadSchema] = Field(None, alias="user")
 
 
 class Token(BaseModel):
@@ -44,7 +45,7 @@ class Token(BaseModel):
 
 class ThreadSchema(ThreadBase):
     user: UserThreadSchema = Field(None)
-    post: Optional[PostBase] = Field(None)
+    # post: Optional[PostBase] = Field(None)
     children: Optional[List["ThreadSchema"]] = None
 
     class Config:
