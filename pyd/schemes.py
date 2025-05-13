@@ -21,7 +21,7 @@ class UserThreadSchema(BaseModel):
 class UserSchema(UserBase):
     role: Optional[RoleBase] = None
     posts: Optional[List[PostBase]] = Field(None, alias="posts")
-    user_password: None = Field(None, exclude=True)
+    user_password: str = Field(..., exclude=True)
     threads: Optional[List[ThreadBase]] = None
 
 
