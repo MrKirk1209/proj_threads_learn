@@ -35,7 +35,7 @@ class PostSchema(PostBase): ...
 
 class PostSchemaWithThreads(PostBase):
     threads: Optional[List["ThreadSchema"]] = Field(None, alias="threads")
-    user: Optional[UserThreadSchema] = Field(None, alias="user")
+    author: Optional[UserThreadSchema] = Field(None, alias="user")
 
 
 class Token(BaseModel):
