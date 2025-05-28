@@ -12,6 +12,7 @@ class Post(Base):
     image_url: Mapped[str]
     threads_count: Mapped[int] = mapped_column(server_default=text("0"))
 
+    category_id: Mapped[int] = mapped_column(ForeignKey("categorys.id"), nullable=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     author: Mapped["User"] = relationship(
@@ -23,6 +24,8 @@ class Post(Base):
     threads: Mapped[list["Thread"]] = relationship(
         "Thread", back_populates="post", cascade="all, delete"
     )
+
+    category: Mapped["Category"] = relationship("Category", back_populates="posts")
 
     # enrollment_year: Mapped[int]
     # course: Mapped[int]
@@ -98,3 +101,13 @@ class Role(Base):
 
     def __repr__(self):
         return f"role(id={self.id}, role_name={self.role_name})"
+
+
+class Category(Base):
+    id: Mapped[int_pk]
+    name: Mapped[str_uniq]
+    posts_count: Mapped[int] = mapped_column(server_default=text("0"))
+
+    posts: Mapped[list["Post"]] = relationship(
+        "Post", back_populates="category", cascade="all, delete"
+    )

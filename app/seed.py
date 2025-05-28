@@ -1,7 +1,8 @@
 import asyncio
 import random
+import sys
 from app.database import async_session_maker  # Импорт твоего session maker
-from app.models.models import User, Role, Post, Thread  # Импорт твоих моделей
+from app.models.models import Category, User, Role, Post, Thread  # Импорт твоих моделей
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from faker import Faker
@@ -13,8 +14,8 @@ NUM_USERS = 20
 NUM_POSTS = 10
 THREADS_PER_POST = 15
 CHILD_THREADS_PER_POST = 30
+NUM_CATEGORIES = 5
 
-# async def seed():
 #     async with async_session_maker() as session:  # Используем твой async_session_maker
 #         async with session.begin():  # BEGIN TRANSACTION
 #             # 1. Создание ролей
@@ -78,8 +79,20 @@ async def seed_users(session: AsyncSession) -> list[User]:
     return users
 
 
+async def seed_categories(session: AsyncSession) -> list[Category]:
+    categories = []
+    for _ in range(NUM_CATEGORIES):
+        category = Category(name=faker.word())
+        session.add(category)
+        categories.append(category)
+
+    await session.commit()
+    return categories
+
+
 async def seed_posts(session: AsyncSession, users: list[User]) -> list[Post]:
     posts = []
+    categories = await seed_categories(session)
     for _ in range(NUM_POSTS):
         post = Post(
             title=faker.sentence(nb_words=6),
@@ -87,6 +100,7 @@ async def seed_posts(session: AsyncSession, users: list[User]) -> list[Post]:
             author_id=random.choice(users).id,
             image_url=faker.image_url(),
         )
+        post.category = random.choice(categories)
         session.add(post)
         posts.append(post)
 
