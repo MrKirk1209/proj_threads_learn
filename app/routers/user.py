@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from app.security import authenticate_user, create_access_token, get_password_hash
-
+from app.security import get_current_user
 # контролер пользователя
 user_router = APIRouter(
     prefix="/user",
@@ -75,7 +75,49 @@ async def create_user(user_data: pyd.CreateUser, db: AsyncSession = Depends(get_
 
     return new_user
 
+@user_router.get("/all_posts_user", response_model=List[pyd.PostSchema])
+async def get_all_post(
+    db: AsyncSession = Depends(get_db),
+    current_user: m.User = Depends(get_current_user)
+    ):
+    # Явно загружаем связанные данные
+    stmt = (
+        select(m.Post)
+        .where(m.Post.author_id == current_user.id)
+        .options(
+            # selectinload(m.Post.author),
+        )
+        .order_by(m.Post.id)
+        .limit(100)
+    )
 
+    result = await db.execute(stmt)
+    users = result.scalars().all()
+
+    return users
+
+@user_router.get("/all_threads_user", response_model=List[pyd.ThreadSendSchema])
+async def get_all_threads(
+    db: AsyncSession = Depends(get_db),
+    current_user: m.User = Depends(get_current_user)
+    ):
+    # Явно загружаем связанные данные
+    stmt = (
+        select(m.Thread)
+        .where(m.Thread.creator_id == current_user.id)
+        .options(
+            selectinload(m.Thread.children, recursion_depth=4),
+            # selectinload(m.Thread.post),
+            subqueryload(m.Thread.parent),
+        )
+        .order_by(m.Thread.id)
+        .limit(100)
+    )
+
+    result = await db.execute(stmt)
+    users = result.scalars().all()
+
+    return users
 # @user_router.post("/login", response_model=pyd.UserSchema)
 # async def login_user(
 #     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

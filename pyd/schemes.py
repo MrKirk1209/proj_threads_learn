@@ -47,10 +47,19 @@ class ThreadSchema(ThreadBase):
     user: UserThreadSchema = Field(None)
     # post: Optional[PostBase] = Field(None)
     children: Optional[List["ThreadSchema"]] = None
+class ThreadSendSchema(ThreadBase):
+    parent: Optional["ThreadBase"] = None
+    children: Optional[List["ThreadBase"]] = None
 
     class Config:
         orm_mode = True
         from_attributes = True
 
+class PostCreateSchema(PostBase): 
+    title: str = Field(..., max_length=255)
+    content: str = Field(None)
+    image_url: Optional[str] = Field(None, max_length=255)
+    class Config:
+        orm_mode = True
 
 ThreadSchema.model_rebuild()
