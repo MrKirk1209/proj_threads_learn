@@ -38,7 +38,7 @@ class CreateThread(BaseModel):
         None, max_length=255, example="https://example.com/image.jpg"
     )
 
-    parent_id: Optional[int] = Field(None, gt=0, example=1)
+    parent_id: int = Field(..., gt=0, example=1)
 
 class CreatePost(BaseModel):
     title: str = Field(..., max_length=255, examples=["Еда"])

@@ -103,7 +103,7 @@ async def get_thread_by_id(thread_id: int, db: AsyncSession = Depends(get_db)):
     return build_thread_tree(threads)
 
 
-@thread_router.post("/{post_id}", response_model=pyd.ThreadSchema, status_code=201)
+@thread_router.post("/post/{post_id}", response_model=pyd.ThreadSchema, status_code=201)
 async def create_thread(
     post_id: int,
     thread_data: pyd.CreateThread,
@@ -131,33 +131,34 @@ async def create_thread(
 
     return new_thread
 
-# @thread_router.post("/{post_id}", response_model=pyd.ThreadSchema, status_code=201)
-# async def create_thread(
-#     parent_id: int,
-#     thread_data: pyd.CreateThread,
-#     current_user: m.User = Depends(get_current_user),
-#     db: AsyncSession = Depends(get_db),
-# ):
-#     # Создаём новый тред
-#     new_thread = m.Thread(
-#         content=thread_data.content,
-#         image_url=thread_data.image_url,
-#         creator_id=current_user.id,
-#         parent_id=parent_id,
-#         post_id=parent_id.post_id,
-#     )
+@thread_router.post("/thread", response_model=pyd.ThreadSchema, status_code=201)
+async def create_thread_for_parent(
+    thread_data: pyd.CreateThread,
+    current_user: m.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    parent_thead = (await db.execute(select(m.Thread).where(m.Thread.id == thread_data.parent_id))).scalars().first()
+    post_id= parent_thead.post_id
+    # print(post_id)
+    # Создаём новый тред
+    new_thread = m.Thread(
+        content=thread_data.content,
+        image_url=thread_data.image_url,
+        creator_id=current_user.id,
+        parent_id=thread_data.parent_id,
+        post_id=post_id
+    )
+    db.add(new_thread)
+    await db.commit()
+    await db.refresh(new_thread)
+    new_thread = pyd.ThreadSchema(
+        **new_thread.__dict__,
+        user=pyd.UserThreadSchema(
+            user_name=current_user.user_name,
+        ),
+    )
 
-#     db.add(new_thread)
-#     await db.commit()
-#     await db.refresh(new_thread)
-#     new_thread = pyd.ThreadSchema(
-#         **new_thread.__dict__,
-#         user=pyd.UserThreadSchema(
-#             user_name=current_user.user_name,
-#         ),
-#     )
-
-#     return new_thread
+    return new_thread
 
 def build_thread_tree(threads: List[m.Thread]) -> List[pyd.ThreadSchema]:
     thread_dict = {thread.id: thread for thread in threads}
