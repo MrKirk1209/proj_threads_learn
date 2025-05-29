@@ -13,6 +13,9 @@
 ## Подключение venv
 
  `.venv\scripts\activate`
+ ## Запуск доки
+
+`fastapi dev app/main.py`
 
 ## Установка зависимостей(библиотек)
 

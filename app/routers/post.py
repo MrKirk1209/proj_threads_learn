@@ -8,7 +8,7 @@ from app.routers.thread import build_thread_tree, get_threads_by_post_id
 import pyd
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, asc
-
+from app.security import get_current_user
 
 post_router = APIRouter(
     prefix="/post",
@@ -107,3 +107,29 @@ async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
     # responce_post.threads = build_thread_tree(post.threads)
     # print(responce_post)
     return responce_post
+
+@post_router.post("/create", response_model=pyd.PostSchema, status_code=201)
+async def create_post(
+
+    post_data:pyd.CreatePost,
+    current_user: m.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    # Создаём новый пост
+    new_post = m.Post(
+        content=post_data.content,
+        image_url=post_data.image_url,
+        author_id=current_user.id,
+    )
+
+    db.add(new_post)
+    await db.commit()
+    await db.refresh(new_post)
+    new_post = pyd.PostSchema(
+        **new_post.__dict__,
+        user=pyd.UserThreadSchema(
+            user_name=current_user.user_name,
+        ),
+    )
+
+    return new_post
