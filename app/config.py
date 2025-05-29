@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     SECRET_KEY: str
     ALGORITHM: str
+    MAX_FILE_SIZE: int
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     domain: str = "http://localhost:8000"
     model_config = SettingsConfigDict(

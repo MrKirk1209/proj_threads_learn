@@ -115,12 +115,16 @@ async def create_post(
     current_user: m.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    category_new = (await db.execute(select(m.Category).where(m.Category.name == post_data.category))).scalars().first()
+    
+    print(category_new)
     # Создаём новый пост
     new_post = m.Post(
         content=post_data.content,
         title=post_data.title,
         image_url=post_data.image_url,
         author_id=current_user.id,
+        category=category_new,
     )
 
     db.add(new_post)

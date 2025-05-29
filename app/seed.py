@@ -70,7 +70,7 @@ async def seed_users(session: AsyncSession) -> list[User]:
             user_name=faker.user_name(),
             email=faker.email(),
             user_password="hashedpassword",
-            role_id=random.randint(9, 10),  # Можно потом сделать фейковый хэш
+            role_id=random.randint(1, 2),  # Можно потом сделать фейковый хэш
         )
         session.add(user)
         users.append(user)
