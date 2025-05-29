@@ -108,16 +108,17 @@ async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
     # print(responce_post)
     return responce_post
 
-@post_router.post("/create", response_model=pyd.PostSchema, status_code=201)
-async def create_post(
 
-    post_data:pyd.CreatePost,
+@post_router.post("", response_model=pyd.PostSchema, status_code=201)
+async def create_post(
+    post_data: pyd.CreatePost,
     current_user: m.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     # Создаём новый пост
     new_post = m.Post(
         content=post_data.content,
+        title=post_data.title,
         image_url=post_data.image_url,
         author_id=current_user.id,
     )

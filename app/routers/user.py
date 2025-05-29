@@ -41,9 +41,7 @@ async def get_all_users(db: AsyncSession = Depends(get_db)):
     return users
 
 
-@user_router.post(
-    "/create", response_model=pyd.Token, status_code=status.HTTP_201_CREATED
-)
+@user_router.post("", response_model=pyd.Token, status_code=status.HTTP_201_CREATED)
 async def create_user(user_data: pyd.CreateUser, db: AsyncSession = Depends(get_db)):
     # print(user_data.user_password)
     hashed_password = get_password_hash(user_data.user_password)
