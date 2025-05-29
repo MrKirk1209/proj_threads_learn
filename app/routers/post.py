@@ -27,12 +27,12 @@ async def get_all_post(db: AsyncSession = Depends(get_db)):
     return post
 
 
-@post_router.get("", response_model=List[pyd.PostSchema], status_code=200)
+@post_router.get("", response_model=List[pyd.postSchemaWithAuthor], status_code=200)
 async def get_all_post_sort(
     sort: str | None = None, db: AsyncSession = Depends(get_db)
 ):
     # Явно загружаем связанные данные
-    stmt = select(m.Post).limit(100)
+    stmt = select(m.Post).options(selectinload(m.Post.author)).limit(100)
 
     match sort:
         case "recent":
@@ -47,6 +47,7 @@ async def get_all_post_sort(
 
     result = await db.execute(stmt)
     posts = result.scalars().all()
+    print(posts)
     return posts
 
 
@@ -60,7 +61,7 @@ async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
         .where(m.Post.id == post_id)
         .options(
             selectinload(m.Post.threads).selectinload(m.Thread.children),
-            selectinload(m.Post.author).selectinload(m.User.role),
+            selectinload(m.Post.author),
         )
     )
 
@@ -79,7 +80,6 @@ async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
         threads_count=post.threads_count,
         author=pyd.UserThreadSchema(
             user_name=post.author.user_name,
-            role=post.author.role.role_name,
         ),
         threads=threads,
     )

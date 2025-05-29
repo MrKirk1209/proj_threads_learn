@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 class UserThreadSchema(BaseModel):
     user_name: str = Field(None, alias="user_name")
-    role: Optional[str] = Field(None, alias="role")
+    # role: Optional[str] = Field(None, alias="role")
 
 
 class UserSchema(UserBase):
@@ -33,9 +33,13 @@ class RoleSchema(RoleBase):
 class PostSchema(PostBase): ...
 
 
+class postSchemaWithAuthor(PostBase):
+    author: Optional[UserThreadSchema] = Field(None, alias="author")
+
+
 class PostSchemaWithThreads(PostBase):
     threads: Optional[List["ThreadSchema"]] = Field(None, alias="threads")
-    author: Optional[UserThreadSchema] = Field(None, alias="user")
+    author: Optional[UserThreadSchema] = Field(None, alias="author")
 
 
 class Token(BaseModel):
@@ -51,6 +55,10 @@ class ThreadSchema(ThreadBase):
     class Config:
         orm_mode = True
         from_attributes = True
+
+
+class FileResponseSchema(BaseModel):
+    url: str = Field(..., example="https://example.com/file.jpg")
 
 
 ThreadSchema.model_rebuild()

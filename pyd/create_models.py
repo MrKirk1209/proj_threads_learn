@@ -25,7 +25,7 @@ from typing import Optional
 class CreateUser(BaseModel):
     email: str = Field(..., max_length=255, example="kolbasa@gmail.com")
     user_name: str = Field(..., max_length=255, example="kolbasa")
-    user_password: str = Field(..., min_length=8, exclude=True, max_length=255)
+    user_password: str = Field(..., min_length=8, exclude=False, max_length=255)
 
     class Config:
         orm_mode = True

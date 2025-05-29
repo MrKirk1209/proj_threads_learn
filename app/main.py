@@ -2,10 +2,21 @@ from typing import Union
 
 from fastapi import FastAPI
 from sqladmin import Admin
-from .routers import user_router, thread_router, role_router, post_router, auth_router
+from .routers import (
+    user_router,
+    thread_router,
+    role_router,
+    post_router,
+    auth_router,
+    upload_router,
+)
+from fastapi.staticfiles import StaticFiles
+
+
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
-from app.admin import AdminAuth, UsersAdmin,RolesAdmin
+from app.admin import AdminAuth, UsersAdmin, RolesAdmin
+
 app = FastAPI()
 
 origins = [
@@ -39,7 +50,18 @@ app.include_router(
     thread_router,
 )
 
+app.include_router(
+    upload_router,
+)
+
 app.include_router(auth_router)
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads",
+)
+
 
 # add the views to admin
 def create_admin(app):
@@ -47,6 +69,8 @@ def create_admin(app):
     admin = Admin(app=app, engine=engine, authentication_backend=authentication_backend)
     admin.add_view(UsersAdmin)
     admin.add_view(RolesAdmin)
-    
+
     return admin
+
+
 create_admin(app)

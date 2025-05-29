@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from app.security import authenticate_user, create_access_token, get_password_hash
+from app.config import settings
 
 # контролер пользователя
 user_router = APIRouter(
@@ -40,7 +41,7 @@ async def get_all_users(db: AsyncSession = Depends(get_db)):
 
 
 @user_router.post(
-    "/create", response_model=pyd.CreateUser, status_code=status.HTTP_201_CREATED
+    "/create", response_model=pyd.Token, status_code=status.HTTP_201_CREATED
 )
 async def create_user(user_data: pyd.CreateUser, db: AsyncSession = Depends(get_db)):
     # print(user_data.user_password)
@@ -72,8 +73,12 @@ async def create_user(user_data: pyd.CreateUser, db: AsyncSession = Depends(get_
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email или имя пользователя уже существует",
         )
-
-    return new_user
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(new_user.id)}, expires_delta=access_token_expires
+    )
+    print(f"Created user: {new_user.user_name} with id: {new_user.id}")
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 # @user_router.post("/login", response_model=pyd.UserSchema)
