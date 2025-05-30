@@ -57,6 +57,13 @@ class ThreadBase(BaseModel):
         orm_mode = True
         from_attributes = True
 
+class CategoryBase(BaseModel):
+    id: int = Field(None, gt=0, example=1)
+    name: str = Field(..., max_length=255, example="Еда")
+    # description: str = Field(None, max_length=255, example="То что можно скушать")
+
+    class Config:
+        orm_mode = True
 
 # class ProductBase(BaseModel):
 #     id: int = Field(None, gt=0, example=1)
