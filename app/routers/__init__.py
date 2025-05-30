@@ -4,3 +4,4 @@ from .role import role_router
 from .post import post_router
 from .auth import auth_router
 from .uploads import upload_router
+from .category import category_router

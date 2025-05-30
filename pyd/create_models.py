@@ -48,3 +48,6 @@ class CreatePost(BaseModel):
         None, max_length=255, example="https://example.com/image.jpg"
     )
     category: str = Field(..., max_length=255, examples=["actually"])
+class CreateCategory(BaseModel):
+    name: str = Field(..., max_length=255, examples=["Еда"])
+    # description: str = Field(None, examples=["То что можно скушать"])

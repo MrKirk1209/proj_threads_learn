@@ -32,6 +32,7 @@ class RoleSchema(RoleBase):
 
 class PostSchema(PostBase): ...
 
+class CategorySchema(CategoryBase): ...
 
 class postSchemaWithAuthor(PostBase):
     author: Optional[UserThreadSchema] = Field(None, alias="author")

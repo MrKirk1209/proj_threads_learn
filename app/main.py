@@ -9,6 +9,7 @@ from .routers import (
     post_router,
     auth_router,
     upload_router,
+    category_router
 )
 from fastapi.staticfiles import StaticFiles
 
@@ -52,6 +53,10 @@ app.include_router(
 
 app.include_router(
     upload_router,
+)
+
+app.include_router(
+    category_router,
 )
 
 app.include_router(auth_router)
