@@ -33,6 +33,8 @@ class PostBase(BaseModel):
     image_url: str = Field(None, examples=["https://example.com/image.jpg"])
     author_id: int = Field(..., gt=0)
 
+    category_id: Optional[int] = Field(None, gt=0)
+
     created_at: datetime = Field(None)
     updated_at: datetime = Field(None)
     threads_count: int = Field(None)

@@ -54,3 +54,4 @@ class CreatePost(BaseModel):
     image_url: Optional[str] = Field(
         None, max_length=255, example="https://example.com/image.jpg"
     )
+    category: str = Field(..., max_length=255, examples=["actually"])
