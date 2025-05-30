@@ -67,6 +67,7 @@ class ThreadSendSchema(ThreadBase):
 class PostCreateSchema(PostBase):
     title: str = Field(..., max_length=255)
     content: str = Field(None)
+    category: Optional[str] = Field(None, max_length=255)
     image_url: Optional[str] = Field(None, max_length=255)
 
     class Config:
