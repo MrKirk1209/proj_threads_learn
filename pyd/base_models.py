@@ -46,7 +46,7 @@ class PostBase(BaseModel):
 class ThreadBase(BaseModel):
     id: int = Field(..., gt=0, example=1)
     content: str = Field(..., max_length=255, example="Варенная колбаса")
-    image_url: str = Field(None, examples=["https://example.com/image.jpg"])
+    image_url: Optional[str] = Field(None, examples=["https://example.com/image.jpg"])
     creator_id: int = Field(..., gt=0, example=1)
     post_id: int = Field(..., gt=0, example=1)
     parent_id: Optional[int] = Field(None, example=1)

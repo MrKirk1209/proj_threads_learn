@@ -40,6 +40,14 @@ class CreateThread(BaseModel):
 
     parent_id: int = Field(..., gt=0, example=1)
 
+
+class createRootThread(BaseModel):
+    content: str = Field(..., max_length=4096, example="Тред с контентом")
+    image_url: Optional[str] = Field(
+        None, max_length=255, example="https://example.com/image.jpg"
+    )
+
+
 class CreatePost(BaseModel):
     title: str = Field(..., max_length=255, examples=["Еда"])
     content: str = Field(None, examples=["То что можно скушать"])

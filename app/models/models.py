@@ -9,7 +9,7 @@ class Post(Base):
     id: Mapped[int_pk]
     title: Mapped[str_uniq]
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    image_url: Mapped[str]
+    image_url: Mapped[str] = mapped_column(default=None, nullable=True)
     threads_count: Mapped[int] = mapped_column(server_default=text("0"))
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categorys.id"), nullable=True)
@@ -44,7 +44,7 @@ class Post(Base):
 class Thread(Base):
     id: Mapped[int_pk]
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    image_url: Mapped[str]
+    image_url: Mapped[str] = mapped_column(default=None, nullable=True)
 
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     parent_id: Mapped[int] = mapped_column(ForeignKey("threads.id"), nullable=True)

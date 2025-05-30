@@ -60,7 +60,9 @@ async def get_post_by_id(post_id: int, db: AsyncSession = Depends(get_db)):
         select(m.Post)
         .where(m.Post.id == post_id)
         .options(
-            selectinload(m.Post.threads).selectinload(m.Thread.children),
+            selectinload(m.Post.threads).selectinload(
+                m.Thread.children, recursion_depth=4
+            ),
             selectinload(m.Post.author),
         )
     )

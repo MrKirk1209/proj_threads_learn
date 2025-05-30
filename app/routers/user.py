@@ -80,7 +80,7 @@ async def create_user(user_data: pyd.CreateUser, db: AsyncSession = Depends(get_
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@user_router.get("/all_posts_user", response_model=List[pyd.PostSchema])
+@user_router.get("/posts", response_model=List[pyd.PostSchema])
 async def get_all_post(
     db: AsyncSession = Depends(get_db), current_user: m.User = Depends(get_current_user)
 ):
@@ -101,7 +101,7 @@ async def get_all_post(
     return users
 
 
-@user_router.get("/all_threads_user", response_model=List[pyd.ThreadSendSchema])
+@user_router.get("/threads", response_model=List[pyd.ThreadSendSchema])
 async def get_all_threads(
     db: AsyncSession = Depends(get_db), current_user: m.User = Depends(get_current_user)
 ):
@@ -110,8 +110,8 @@ async def get_all_threads(
         select(m.Thread)
         .where(m.Thread.creator_id == current_user.id)
         .options(
-            selectinload(m.Thread.children, recursion_depth=4),
-            # selectinload(m.Thread.post),
+            selectinload(m.Thread.user),
+            selectinload(m.Thread.post),
             subqueryload(m.Thread.parent),
         )
         .order_by(m.Thread.id)
