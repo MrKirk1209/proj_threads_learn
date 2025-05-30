@@ -1,5 +1,7 @@
 from sqladmin import Admin, ModelView
-from app.models.models import User,Role
+
+from app.models.models import User,Role,Post,Category,Thread
+
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 from sqlalchemy import select
@@ -90,6 +92,26 @@ class UsersAdmin(ModelView, model=User):
         'role.role_name': 'Роль'
     }
 
+# class User(Base):
+#     id: Mapped[int_pk]
+#     email: Mapped[str_uniq]
+#     user_name: Mapped[str_uniq]
+#     user_password: Mapped[str]
+#     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
+
+#     role: Mapped["Role"] = relationship(
+#         "Role",
+#         back_populates="users",
+#     )
+#     posts: Mapped[list["Post"]] = relationship(
+#         "Post", back_populates="author", cascade="all, delete"
+#     )
+#     threads: Mapped[list["Thread"]] = relationship(
+#         "Thread", back_populates="user", cascade="all, delete"
+#     )
+
+#     def __repr__(self):
+#         return f"User(id={self.id}, email={self.email})"
 class RolesAdmin(ModelView, model=Role):
     column_list = [
         'id', 'role_name'
@@ -99,3 +121,124 @@ class RolesAdmin(ModelView, model=Role):
         'role_name': 'Название роли', 
 
     }
+    can_export = True
+#class Role(Base):
+#     id: Mapped[int_pk]
+#     role_name: Mapped[str_uniq]
+
+#     users: Mapped[list["User"]] = relationship(
+#         "User", back_populates="role", cascade="all, delete"
+#     )
+
+#     def __repr__(self):
+#         return f"role(id={self.id}, role_name={self.role_name})"
+
+class PostAdmin(ModelView, model=Post):
+    column_list = [
+        'id', 'title', 'content', 'image_url', 'threads_count'
+    ]
+    column_labels = {
+        'id': 'ID',
+        'title': 'Заголовок',
+        'content': 'Текст',
+        'image_url': 'URL картинки',
+        'threads_count': 'Количество комментариев',
+
+    }
+    can_export = True
+#     class Post(Base):
+#     id: Mapped[int_pk]
+#     title: Mapped[str_uniq]
+#     content: Mapped[str] = mapped_column(Text, nullable=False)
+#     image_url: Mapped[str] = mapped_column(default=None, nullable=True)
+#     threads_count: Mapped[int] = mapped_column(server_default=text("0"))
+
+#     category_id: Mapped[int] = mapped_column(ForeignKey("categorys.id"), nullable=True)
+#     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+#     author: Mapped["User"] = relationship(
+#         "User",
+#         back_populates="posts",
+#     )
+#     # address: Mapped[str]
+
+#     threads: Mapped[list["Thread"]] = relationship(
+#         "Thread", back_populates="post", cascade="all, delete"
+#     )
+
+#     category: Mapped["Category"] = relationship("Category", back_populates="posts")
+
+#     # enrollment_year: Mapped[int]
+#     # course: Mapped[int]
+#     # special_notes: Mapped[str_null_true]
+
+#     # def __str__(self):
+#     #     return (f"{self.__class__.__name__}(id={self.id}, "
+#     #             f"first_name={self.first_name!r},"
+#     #             f"last_name={self.last_name!r})")
+
+#     def __repr__(self):
+#         return f"Post(id={self.id}, title={self.title})"
+
+class ThreadAdmin(ModelView, model=Thread):
+    column_list = [
+        'id',  'content', 'image_url', 'creator_id', 'parent_id', 'post_id'
+    ]
+    column_labels = {
+        'id': 'ID',
+        'content': 'Текст',
+        'image_url': 'URL картинки',
+        'creator_id': 'ID автора',
+        'parent_id': 'ID родительского треда',
+        'post_id': 'ID поста',
+
+    }
+    can_export = True
+# # Таблица Тредов
+# class Thread(Base):
+#     id: Mapped[int_pk]
+#     content: Mapped[str] = mapped_column(Text, nullable=False)
+#     image_url: Mapped[str] = mapped_column(default=None, nullable=True)
+
+#     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+#     parent_id: Mapped[int] = mapped_column(ForeignKey("threads.id"), nullable=True)
+#     post_id: Mapped[int] = mapped_column(ForeignKey("posts.id"), nullable=False)
+
+#     post: Mapped["Post"] = relationship("Post", back_populates="threads")
+#     user: Mapped["User"] = relationship("User", back_populates="threads")
+#     parent: Mapped["Thread"] = relationship(
+#         "Thread", back_populates="children", remote_side="Thread.id"
+#     )
+#     children: Mapped[list["Thread"]] = relationship(
+#         "Thread", back_populates="parent", cascade="all, delete-orphan"
+#     )
+
+#     def __repr__(self):
+#         return f"Thread(id={self.id})"
+
+#     # count_students: Mapped[int] = mapped_column(server_default=text('0'))
+
+#     # def __str__(self):
+#     #     return f"{self.__class__.__name__}(id={self.id}, major_name={self.major_name!r})"
+
+
+class CategoryAdmin(ModelView, model=Category):
+    column_list = [
+        'id', 'name', 'posts_count'
+    ]
+    column_labels = {
+        'id': 'ID',
+        'name': 'Название',
+        'posts_count': 'Количество постов',
+
+    }
+    can_export = True
+
+# class Category(Base):
+#     id: Mapped[int_pk]
+#     name: Mapped[str_uniq]
+#     posts_count: Mapped[int] = mapped_column(server_default=text("0"))
+
+#     posts: Mapped[list["Post"]] = relationship(
+#         "Post", back_populates="category", cascade="all, delete"
+#     )
