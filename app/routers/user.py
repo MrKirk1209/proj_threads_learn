@@ -1,7 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import relationship, selectinload, subqueryload, Session
 from typing import Annotated, List
 import app.models.models as m
@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from app.security import authenticate_user, create_access_token, get_password_hash
 from app.security import get_current_user
 from app.config import settings
+from sqlalchemy import func
 
 # контролер пользователя
 user_router = APIRouter(
@@ -122,6 +123,68 @@ async def get_all_threads(
     users = result.scalars().all()
 
     return users
+
+
+@user_router.get("/me", response_model=pyd.UserInfo)
+async def get_current_user_info(
+    current_user: m.User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    """
+    Получить информацию о текущем пользователе.
+    """
+    cur_user = (
+        (
+            await db.execute(
+                select(m.User)
+                .options(
+                    selectinload(m.User.role),
+                )
+                .where(m.User.id == current_user.id)
+            )
+        )
+        .scalars()
+        .first()
+    )
+    if not cur_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден",
+        )
+    q = text(
+        """
+        SELECT count(creator_id) AS threads_count
+        FROM threads t
+        
+        WHERE t.creator_id = :user_id
+        """
+    )
+    res = await db.execute(q, {"user_id": cur_user.id})
+    threads_count = res.scalar() if res else 0
+
+    q = text(
+        """
+        SELECT count(author_id) AS posts_count
+        FROM posts p
+        WHERE p.author_id = :user_id
+        """
+    )
+    res = await db.execute(q, {"user_id": cur_user.id})
+    post_count = res.scalar() if res else 0
+
+    return pyd.UserInfo(
+        id=cur_user.id,
+        email=cur_user.email,
+        user_name=cur_user.user_name,
+        role=cur_user.role.role_name,
+        threads_count=threads_count,
+        posts_count=post_count,
+    )
+
+
+async def get_count(q):
+    count_q = await q.statement.with_only_columns([func.count()]).order_by(None)
+    count = await q.session.execute(count_q).scalar()
+    return count
 
 
 # @user_router.post("/login", response_model=pyd.UserSchema)

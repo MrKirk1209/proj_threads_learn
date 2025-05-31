@@ -28,7 +28,7 @@ class CreateUser(BaseModel):
     user_password: str = Field(..., min_length=8, exclude=False, max_length=255)
 
     class Config:
-        orm_mode = True
+
         from_attributes = True
 
 
@@ -54,7 +54,9 @@ class CreatePost(BaseModel):
     image_url: Optional[str] = Field(
         None, max_length=255, example="https://example.com/image.jpg"
     )
-    category: str = Field(..., max_length=255, examples=["actually"])
+    category: Optional[str] = Field(None, max_length=255, examples=["actually"])
+
+
 class CreateCategory(BaseModel):
     name: str = Field(..., max_length=255, examples=["Еда"])
     # description: str = Field(None, examples=["То что можно скушать"])

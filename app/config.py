@@ -30,4 +30,4 @@ def get_db_url():
 
 DB_URL = get_db_url()
 
-print(DB_URL)
+# print(DB_URL)

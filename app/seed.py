@@ -11,9 +11,9 @@ from faker import Faker
 faker = Faker()
 
 NUM_USERS = 20
-NUM_POSTS = 10
-THREADS_PER_POST = 15
-CHILD_THREADS_PER_POST = 30
+NUM_POSTS = 500
+THREADS_PER_POST = 4
+CHILD_THREADS_PER_POST = 4
 NUM_CATEGORIES = 5
 
 #     async with async_session_maker() as session:  # Используем твой async_session_maker
@@ -70,7 +70,7 @@ async def seed_users(session: AsyncSession) -> list[User]:
             user_name=faker.user_name(),
             email=faker.email(),
             user_password="hashedpassword",
-            role_id=random.randint(1, 2),  # Можно потом сделать фейковый хэш
+            role_id=random.randint(9, 10),  # Можно потом сделать фейковый хэш
         )
         session.add(user)
         users.append(user)

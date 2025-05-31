@@ -8,7 +8,7 @@ class RoleBase(BaseModel):
     role_name: str = Field(None, max_length=255, example="Администратор")
 
     class Config:
-        orm_mode = True
+
         from_attributes = True
 
 
@@ -20,7 +20,7 @@ class UserBase(BaseModel):
     role_id: int = Field(..., gt=0, examples=[1])
 
     class Config:
-        orm_mode = True
+
         from_attributes = True
 
 
@@ -30,7 +30,7 @@ class PostBase(BaseModel):
     id: int = Field(...)
     title: str = Field(..., max_length=255, examples=["Еда"])
     content: str = Field(None, examples=["То что можно скушать"])
-    image_url: str = Field(None, examples=["https://example.com/image.jpg"])
+    image_url: Optional[str] = Field(None, examples=["https://example.com/image.jpg"])
     author_id: int = Field(..., gt=0)
 
     category_id: Optional[int] = Field(None, gt=0)
@@ -41,7 +41,7 @@ class PostBase(BaseModel):
     # author: User
 
     class Config:
-        orm_mode = True
+
         from_attributes = True
 
 
@@ -54,8 +54,9 @@ class ThreadBase(BaseModel):
     parent_id: Optional[int] = Field(None, example=1)
 
     class Config:
-        orm_mode = True
+
         from_attributes = True
+
 
 class CategoryBase(BaseModel):
     id: int = Field(None, gt=0, example=1)
@@ -63,23 +64,4 @@ class CategoryBase(BaseModel):
     # description: str = Field(None, max_length=255, example="То что можно скушать")
 
     class Config:
-        orm_mode = True
-
-# class ProductBase(BaseModel):
-#     id: int = Field(None, gt=0, example=1)
-#     name: str = Field(..., max_length=255, example="Колбаса")
-#     description: str = Field(
-#         None, max_length=255, example="Варенная колбаса, самая вкусная"
-#     )
-#     price: int = Field(..., gt=0, example=99.95)
-
-#     class Config:
-#         orm_mode = True
-
-
-# class BaseUser(BaseModel):
-#     id: int = Field(None, gt=0, example=1)
-#     username: str = Field(..., max_length=255, example="Колбаса")
-
-#     class Config:
-#         orm_mode = True
+        from_attributes = True

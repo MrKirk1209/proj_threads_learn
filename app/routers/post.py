@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import relationship, selectinload, subqueryload, Session
 from typing import List
 import app.models.models as m
@@ -9,6 +9,9 @@ import pyd
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc, asc
 from app.security import get_current_user
+from fastapi.responses import JSONResponse
+from asyncpg.exceptions import UniqueViolationError
+from sqlalchemy.exc import IntegrityError
 
 post_router = APIRouter(
     prefix="/post",
@@ -29,26 +32,83 @@ async def get_all_post(db: AsyncSession = Depends(get_db)):
 
 @post_router.get("", response_model=List[pyd.postSchemaWithAuthor], status_code=200)
 async def get_all_post_sort(
-    sort: str | None = None, db: AsyncSession = Depends(get_db)
+    sort: str | None = None,
+    search: str | None = Query(None),
+    limit: int = 10,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
 ):
-    # Явно загружаем связанные данные
-    stmt = select(m.Post).options(selectinload(m.Post.author)).limit(100)
+    # 1) Начальный запрос к таблице Post (без OFFSET/LIMIT)
+    base_stmt = select(m.Post).options(selectinload(m.Post.author))
 
+    # 2) Если есть поисковая строка — добавляем WHERE
+    if search:
+
+        ilike_pattern = f"%{search}%"
+        base_stmt = base_stmt.where(
+            or_(
+                m.Post.title.ilike(ilike_pattern),
+                m.Post.content.ilike(ilike_pattern),
+            )
+        )
+
+    # 3) Сначала считаем общее количество (без пагинации)
+    if search:
+        count_sql = text(
+            """
+            SELECT COUNT(*) 
+            FROM posts 
+            WHERE title ILIKE :pattern OR content ILIKE :pattern
+        """
+        )
+        params = {"pattern": f"%{search}%"}
+        count_result = await db.execute(count_sql, params)
+    else:
+        # print("No search")
+        count_sql = text("SELECT COUNT(*) FROM posts")
+        count_result = await db.execute(count_sql)
+
+    total = count_result.scalar() or 0
+    # print("Total:", total)
+
+    # 4) Теперь применяем сортировку к базовому запросу и добавляем пагинацию
     match sort:
         case "recent":
-            stmt = stmt.order_by(desc(m.Post.created_at))
+            base_stmt = base_stmt.order_by(desc(m.Post.created_at))
         case "relevant":
-            stmt = stmt.order_by(desc(m.Post.threads_count))
+            base_stmt = base_stmt.order_by(desc(m.Post.threads_count))
         case "old":
-            stmt = stmt.order_by(asc(m.Post.created_at))
+            base_stmt = base_stmt.order_by(asc(m.Post.created_at))
+        case _:
+            base_stmt = base_stmt.order_by(m.Post.id)
 
-        case None:
-            stmt = stmt.order_by(m.Post.id)
-
-    result = await db.execute(stmt)
+    paginated_stmt = base_stmt.offset(offset).limit(limit)
+    result = await db.execute(paginated_stmt)
     posts = result.scalars().all()
-    print(posts)
-    return posts
+
+    # 5) Подготавливаем JSON-ответ и прикладываем заголовок X-Total-Count
+    payload = [
+        pyd.postSchemaWithAuthor(
+            id=post.id,
+            title=post.title,
+            content=post.content,
+            category_id=post.category_id,
+            image_url=post.image_url,
+            author_id=post.author_id,
+            created_at=post.created_at,
+            updated_at=post.updated_at,
+            threads_count=post.threads_count,
+            author=pyd.UserThreadSchema(user_name=post.author.user_name),
+        ).model_dump(mode="json")
+        for post in posts
+    ]
+
+    return JSONResponse(
+        content={
+            "posts": payload,
+            "total": total,
+        }
+    )
 
 
 @post_router.get(
@@ -117,26 +177,45 @@ async def create_post(
     current_user: m.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    category_new = (await db.execute(select(m.Category).where(m.Category.name == post_data.category))).scalars().first()
-    
-    print(category_new)
+    category_db = None
+
+    if post_data.category:
+        category_db = (
+            (
+                await db.execute(
+                    select(m.Category).where(m.Category.name == post_data.category)
+                )
+            )
+            .scalars()
+            .first()
+        )
+
     # Создаём новый пост
     new_post = m.Post(
         content=post_data.content,
         title=post_data.title,
         image_url=post_data.image_url,
         author_id=current_user.id,
-        category=category_new,
     )
 
-    db.add(new_post)
-    await db.commit()
-    await db.refresh(new_post)
-    new_post = pyd.PostSchema(
-        **new_post.__dict__,
-        user=pyd.UserThreadSchema(
-            user_name=current_user.user_name,
-        ),
-    )
+    if post_data.category and category_db:
+        new_post.category_id = category_db.id
+    try:
+        db.add(new_post)
+        await db.commit()
+        await db.refresh(new_post)
+        new_post = pyd.PostSchema(
+            **new_post.__dict__,
+            user=pyd.UserThreadSchema(
+                user_name=current_user.user_name,
+            ),
+        )
+    except IntegrityError as e:
+        await db.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Пост с таким названием уже существует",
+        )
 
     return new_post

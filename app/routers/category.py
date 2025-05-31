@@ -16,6 +16,7 @@ category_router = APIRouter(
     tags=["category"],
 )
 
+
 @category_router.get("", response_model=List[pyd.CategorySchema])
 async def get_all_category(db: AsyncSession = Depends(get_db)):
     stmt = select(m.Category).order_by(m.Category.id).limit(100)
@@ -25,7 +26,8 @@ async def get_all_category(db: AsyncSession = Depends(get_db)):
 
     return post
 
-@category_router.post("/create", response_model=pyd.CategorySchema, status_code=201)
+
+@category_router.post("/", response_model=pyd.CategorySchema, status_code=201)
 async def create_post(
     category_data: pyd.CreateCategory,
     current_user: m.User = Depends(get_current_user),
@@ -43,9 +45,6 @@ async def create_post(
     await db.refresh(new_category)
     new_category = pyd.CategorySchema(
         **new_category.__dict__,
-        user=pyd.UserThreadSchema(
-            user_name=current_user.user_name,
-        ),
     )
 
     return new_category

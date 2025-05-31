@@ -21,8 +21,17 @@ class UserThreadSchema(BaseModel):
 class UserSchema(UserBase):
     role: Optional[RoleBase] = None
     posts: Optional[List[PostBase]] = Field(None, alias="posts")
-    user_password: str = Field(..., exclude=True)
+    user_password: Optional[str] = Field(None, exclude=True)
     threads: Optional[List[ThreadBase]] = None
+
+
+class UserInfo(BaseModel):
+    id: int = Field(None, gt=0, example=1)
+    user_name: str = Field(..., max_length=255, example="kolbasa")
+    email: str = Field(..., max_length=255, example="kolbasa@gmail.com")
+    role: Optional[str] = Field(None, alias="role")
+    threads_count: int = Field(None, gt=0, example=10)
+    posts_count: int = Field(None, gt=0, example=5)
 
 
 class RoleSchema(RoleBase):
@@ -32,7 +41,9 @@ class RoleSchema(RoleBase):
 
 class PostSchema(PostBase): ...
 
+
 class CategorySchema(CategoryBase): ...
+
 
 class postSchemaWithAuthor(PostBase):
     author: Optional[UserThreadSchema] = Field(None, alias="author")
@@ -61,7 +72,7 @@ class ThreadSendSchema(ThreadBase):
     post: Optional[PostBase] = Field(None)
 
     class Config:
-        orm_mode = True
+
         from_attributes = True
 
 
@@ -72,7 +83,7 @@ class PostCreateSchema(PostBase):
     image_url: Optional[str] = Field(None, max_length=255)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class FileResponseSchema(BaseModel):
