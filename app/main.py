@@ -16,8 +16,7 @@ from fastapi.staticfiles import StaticFiles
 
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
-from app.admin import AdminAuth, UsersAdmin, RolesAdmin
-
+from app.admin import AdminAuth, UsersAdmin, RolesAdmin,PostAdmin,ThreadAdmin,CategoryAdmin
 app = FastAPI()
 
 origins = [
@@ -73,7 +72,9 @@ def create_admin(app):
     admin = Admin(app=app, engine=engine, authentication_backend=authentication_backend)
     admin.add_view(UsersAdmin)
     admin.add_view(RolesAdmin)
-
+    admin.add_view(PostAdmin)
+    admin.add_view(ThreadAdmin)
+    admin.add_view(CategoryAdmin)
     return admin
 
 
