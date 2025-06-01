@@ -30,8 +30,8 @@ class UserInfo(BaseModel):
     user_name: str = Field(..., max_length=255, example="kolbasa")
     email: str = Field(..., max_length=255, example="kolbasa@gmail.com")
     role: Optional[str] = Field(None, alias="role")
-    threads_count: int = Field(None, gt=0, example=10)
-    posts_count: int = Field(None, gt=0, example=5)
+    threads_count: int = Field(None, example=10)
+    posts_count: int = Field(None, example=5)
 
 
 class RoleSchema(RoleBase):
