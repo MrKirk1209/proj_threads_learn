@@ -42,6 +42,11 @@ class RoleSchema(RoleBase):
 class PostSchema(PostBase): ...
 
 
+class PostShemaAdvanced(BaseModel):
+    posts: List[PostSchema] = Field(None, alias="posts")
+    total_count: int = Field(None, gt=0, example=10)
+
+
 class CategorySchema(CategoryBase): ...
 
 

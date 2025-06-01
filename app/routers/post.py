@@ -30,10 +30,11 @@ async def get_all_post(db: AsyncSession = Depends(get_db)):
     return post
 
 
-@post_router.get("", response_model=List[pyd.postSchemaWithAuthor], status_code=200)
+@post_router.get("", response_model=pyd.PostShemaAdvanced, status_code=200)
 async def get_all_post_sort(
     sort: str | None = None,
     search: str | None = Query(None),
+    category: str | None = Query(None),
     limit: int = 10,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -41,6 +42,15 @@ async def get_all_post_sort(
     # 1) Начальный запрос к таблице Post (без OFFSET/LIMIT)
     base_stmt = select(m.Post).options(selectinload(m.Post.author))
 
+    if category:
+        category_db = (
+            await db.execute(select(m.Category).where(m.Category.name == category))
+        ).scalar_one_or_none()
+        print("Category:", category)
+        if not category_db:
+            raise HTTPException(status_code=404, detail="Категория не найдена")
+        base_stmt = base_stmt.where(m.Post.category_id == category_db.id)
+    # print("Base stmt:", base_stmt.compile(compile_kwargs={"literal_binds": True}))
     # 2) Если есть поисковая строка — добавляем WHERE
     if search:
 
@@ -53,21 +63,27 @@ async def get_all_post_sort(
         )
 
     # 3) Сначала считаем общее количество (без пагинации)
-    if search:
-        count_sql = text(
-            """
-            SELECT COUNT(*) 
-            FROM posts 
-            WHERE title ILIKE :pattern OR content ILIKE :pattern
-        """
-        )
-        params = {"pattern": f"%{search}%"}
-        count_result = await db.execute(count_sql, params)
-    else:
-        # print("No search")
-        count_sql = text("SELECT COUNT(*) FROM posts")
-        count_result = await db.execute(count_sql)
+    count_stmt = select(func.count()).select_from(m.Post)
+    if search or category:
+        count_stmt = select(func.count()).select_from(base_stmt.subquery())
 
+    # 3) Сначала считаем общее количество (без пагинации)
+    # if search or category:
+    #     count_result = await db.execute(count_stmt)
+    # count_sql = text(
+    #     """
+    #     SELECT COUNT(*)
+    #     FROM posts
+    #     WHERE title ILIKE :pattern OR content ILIKE :pattern
+    # """
+    # )
+    # params = {"pattern": f"%{search}%"}
+    # count_result = await db.execute(count_sql, params)
+    # else:
+    # print("No search")
+    # count_sql = text("SELECT COUNT(*) FROM posts")
+    # count_result = await db.execute(count_sql)
+    count_result = await db.execute(count_stmt)
     total = count_result.scalar() or 0
     # print("Total:", total)
 

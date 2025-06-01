@@ -27,7 +27,7 @@ async def get_all_category(db: AsyncSession = Depends(get_db)):
     return post
 
 
-@category_router.post("/", response_model=pyd.CategorySchema, status_code=201)
+@category_router.post("", response_model=pyd.CategorySchema, status_code=201)
 async def create_post(
     category_data: pyd.CreateCategory,
     current_user: m.User = Depends(get_current_user),
